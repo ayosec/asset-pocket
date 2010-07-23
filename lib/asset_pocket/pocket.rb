@@ -4,7 +4,7 @@ require 'asset_pocket/compressor'
 module AssetPocket
     class Pocket
 
-        attr_reader :definitions
+        attr_reader :definitions, :generator
 
         def initialize(generator)
             @generator = generator
@@ -19,6 +19,25 @@ module AssetPocket
             AssetPocket::Compressor.parse name, options
         end
 
+        def sass(option = {}, &block)
+            case option
+            when Hash
+                SourceFilter::Sass.default_options.merge! option
+            when String
+                defs = SassDefinitions.new(self, option)
+                defs.instance_eval(&block)
+                definitions << defs
+            else
+                raise ArgumentError, "Unknown argument type: #{options.class}"
+            end
+        end
+
+        def css(filename, &block)
+            defs = CSSDefinitions.new(self, filename)
+            defs.instance_eval(&block)
+            definitions << defs
+        end
+
         def js(filename, &block)
             defs = JSDefinitions.new(self, filename)
             defs.instance_eval(&block)
@@ -26,10 +45,11 @@ module AssetPocket
         end
 
         class Definitions
-            attr_reader :files, :compressor, :filename
+            attr_reader :content, :compressor, :filename, :pocket
 
             def initialize(pocket, filename)
-                @files = []
+                @pocket = pocket
+                @content = []
                 @filename = filename
                 @compressor = nil
                 @separator = ""
@@ -40,7 +60,7 @@ module AssetPocket
             end
 
             def use(pattern)
-                @files << pattern
+                @content << [ :pattern, pattern ]
             end
 
             def compress(name, options = {})
@@ -52,9 +72,28 @@ module AssetPocket
                 @separator
             end
 
+            def post_process(generated_content)
+                generated_content
+            end
+
+        end
+
+        class CSSDefinitions < Definitions
         end
 
         class JSDefinitions < Definitions
+        end
+
+        class SassDefinitions < Definitions
+            def import(filename)
+                @content << [ :string, "@import \"#{File.expand_path(filename, pocket.generator.root_path)}\";\n" ]
+            end
+
+            alias_method :use, :import
+
+            def post_process(generated_content)
+                SourceFilter::Sass.render("#{filename}.scss", generated_content)
+            end
         end
 
     end

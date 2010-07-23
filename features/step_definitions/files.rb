@@ -3,6 +3,8 @@ Before do
     @created_files = []
     @temp_dir = "/tmp/asset_pocket_tests-#$$"
 
+    AssetPocket::SourceFilter::Sass.default_options[:cache_location] = "#@temp_dir/sass-cache"
+
     unless File.directory?(@temp_dir)
         Dir.mkdir @temp_dir
     end
@@ -38,6 +40,6 @@ Then /^a file named "([^"]*)" contains "([^"]*)"$/ do |filename, content|
     filename = "#@temp_dir/#{filename}"
     File.exist?(filename).should be_true
 
-    File.read(filename).should eql(content)
+    File.read(filename).inspect[1..-2].should eql(content)
 end
 
