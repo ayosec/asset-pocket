@@ -80,8 +80,8 @@ Feature: JavaScripts Pocket
 
         compressor :append, :handler => AppendContentCompressor.new
         compressor :append, :extra => "baz"
-        js "genereated/upper.js" do
-            compress :upper
+        js "genereated/append.js" do
+            compress :append
             use "sources/**/*.js"
         end
         """

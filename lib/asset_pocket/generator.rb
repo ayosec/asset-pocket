@@ -21,12 +21,17 @@ module AssetPocket
                 generated_filename = File.join(root_path, definition.filename)
                 FileUtils.mkpath File.dirname(generated_filename)
                 File.open(generated_filename, "w") do |generated_file|
-                    generated_file.write(
-                        definition.files.flatten.map do |pattern|
-                            Dir["#{root_path}/#{pattern}"].sort!.map! do |found_file|
-                                File.read(found_file)
-                            end
-                        end.flatten.join(definition.separator))
+                    content = definition.files.flatten.map do |pattern|
+                        Dir["#{root_path}/#{pattern}"].sort!.map! do |found_file|
+                            File.read(found_file)
+                        end
+                    end.flatten!.join(definition.separator)
+
+                    if definition.use_compressor?
+                        content = definition.compressor.compress(content)
+                    end
+
+                    generated_file.write(content)
                 end
             end
 

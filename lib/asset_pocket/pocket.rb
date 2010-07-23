@@ -1,4 +1,6 @@
 
+require 'asset_pocket/compressor'
+
 module AssetPocket
     class Pocket
 
@@ -14,6 +16,7 @@ module AssetPocket
         end
 
         def compressor(name, options = {})
+            AssetPocket::Compressor.parse name, options
         end
 
         def js(filename, &block)
@@ -32,12 +35,16 @@ module AssetPocket
                 @separator = ""
             end
 
+            def use_compressor?
+                @compressor
+            end
+
             def use(pattern)
                 @files << pattern
             end
 
             def compress(name, options = {})
-                @compressor = {:name => name, :options => {}}
+                @compressor = AssetPocket::Compressor.parse name, options
             end
 
             def separator(new_value = nil)
