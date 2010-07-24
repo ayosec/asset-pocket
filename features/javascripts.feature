@@ -7,12 +7,12 @@ Feature: JavaScripts Pocket
         And a file named "sources/bar.js" with "bar();"
         When generate a pocket with:
         """
-        js "genereated/dest.js" do
+        js "generated/dest.js" do
             use "sources/foo.js"
             use "sources/bar.js"
         end
         """
-        Then a file named "genereated/dest.js" contains "foo();bar();"
+        Then a file named "generated/dest.js" contains "foo();bar();"
 
     @javascript
     Scenario: combine several files with a separator
@@ -20,14 +20,14 @@ Feature: JavaScripts Pocket
         And a file named "sources/bar.js" with "bar();"
         When generate a pocket with:
         """
-        js "genereated/dest.js" do
+        js "generated/dest.js" do
             use "sources/foo.js"
             use "sources/bar.js"
 
             separator "|"
         end
         """
-        Then a file named "genereated/dest.js" contains "foo();|bar();"
+        Then a file named "generated/dest.js" contains "foo();|bar();"
 
 
     @javascript
@@ -39,11 +39,11 @@ Feature: JavaScripts Pocket
         And a file named "sources/a/c.js" with "3"
         When generate a pocket with:
         """
-        js "genereated/everything.js" do
+        js "generated/everything.js" do
             use "sources/**/*.js"
         end
         """
-        Then a file named "genereated/everything.js" contains "12345"
+        Then a file named "generated/everything.js" contains "12345"
 
     @javascript
     Scenario: a custom compressor can be defined in the configuration
@@ -58,12 +58,12 @@ Feature: JavaScripts Pocket
         end
 
         compressor :upper, :handler => UpperCompressor.new
-        js "genereated/upper.js" do
+        js "generated/upper.js" do
             compress :upper
             use "sources/**/*.js"
         end
         """
-        Then a file named "genereated/upper.js" contains "BARFOO"
+        Then a file named "generated/upper.js" contains "BARFOO"
 
     @javascript
     Scenario: compressors can receive parameters 
@@ -80,10 +80,10 @@ Feature: JavaScripts Pocket
 
         compressor :append, :handler => AppendContentCompressor.new
         compressor :append, :extra => "baz"
-        js "genereated/append.js" do
+        js "generated/append.js" do
             compress :append
             use "sources/**/*.js"
         end
         """
-        Then a file named "genereated/append.js" contains "barfoobaz"
+        Then a file named "generated/append.js" contains "barfoobaz"
 
