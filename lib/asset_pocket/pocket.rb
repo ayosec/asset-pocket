@@ -44,6 +44,12 @@ module AssetPocket
             definitions << defs
         end
 
+        def files(dirname, &block)
+            defs = FilesDefinitions.new(self, dirname)
+            defs.instance_eval(&block)
+            definitions << defs
+        end
+
         class Definitions
             attr_reader :content, :compressor, :filename, :pocket
 
@@ -53,6 +59,10 @@ module AssetPocket
                 @filename = filename
                 @compressor = nil
                 @separator = ""
+            end
+
+            def process
+                :create_file
             end
 
             def use_compressor?
@@ -89,11 +99,25 @@ module AssetPocket
                 @content << [ :string, "@import \"#{File.expand_path(filename, pocket.generator.root_path)}\";\n" ]
             end
 
-            alias_method :use, :import
-
             def post_process(generated_content)
                 SourceFilter::Sass.render("#{filename}.scss", generated_content)
             end
+
+            undef_method :use
+        end
+
+        class FilesDefinitions < Definitions
+            def process
+                :copy_files
+            end
+
+            def base(value = nil)
+                @base = value if value
+                @base || "."
+            end
+
+            undef_method :separator
+            undef_method :compress
         end
 
     end

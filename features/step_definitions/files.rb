@@ -24,7 +24,7 @@ Given /^a file named "([^"]*)" with "([^"]*)"$/ do |filename, content|
     filename = "#@temp_dir/#{filename}"
     File.exist?(filename).should be_false
 
-    @created_files << filename
+    @created_files.unshift filename
     FileUtils.mkpath File.dirname(filename)
     File.open(filename, "w") {|f| f.write content }
 end
