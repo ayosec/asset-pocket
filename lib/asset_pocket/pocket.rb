@@ -1,5 +1,6 @@
 
 require 'asset_pocket/compressor'
+require 'asset_pocket/css_sprites'
 
 module AssetPocket
     class Pocket
@@ -61,6 +62,10 @@ module AssetPocket
                 @separator = ""
             end
 
+            def full_filename
+                pocket.generator.root_path.join filename
+            end
+
             def process
                 :create_file
             end
@@ -89,6 +94,37 @@ module AssetPocket
         end
 
         class CSSDefinitions < Definitions
+
+            def sprite(name, &block)
+                @current_sprite = SpriteDefition.new(name, self)
+                block.call
+                @current_sprite.generate!
+            ensure
+                @current_sprite = nil
+            end
+
+            def layout(value)
+                ensure_sprite!
+                @current_sprite.layout = value
+            end
+
+            def images_location(value)
+                ensure_sprite!
+                @current_sprite.images_location = value
+            end
+
+            def use(pattern)
+                if @current_sprite
+                    @current_sprite.use pattern
+                else
+                    super
+                end
+            end
+
+        private
+            def ensure_sprite!
+                raise NameError, "this macro has to be used in a sprite block" if @current_sprite.nil?
+            end
         end
 
         class JSDefinitions < Definitions
