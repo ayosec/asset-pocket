@@ -12,17 +12,13 @@ end
 
 Before do
     @created_images = []
-    @temp_dir = Pathname.new("/tmp/asset_pocket_test/sprites-#$$")
-    @temp_dir.mkpath
+    @temp_dir = make_temp_directory
 end
 
 After do
     @created_images.each do |filename|
-        File.unlink filename
-        dirname = File.dirname(filename)
-        if Dir["#{dirname}/*"].empty?
-            Dir.rmdir(dirname)
-        end
+        filename.delete
+        filename.dirname.rmdir_when_empty
     end
 end
 

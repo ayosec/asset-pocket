@@ -1,32 +1,25 @@
 
 Before do
     @created_files = []
-    @temp_dir = "/tmp/asset_pocket_tests-#$$"
+    @temp_dir = make_temp_directory
 
-    AssetPocket::SourceFilter::Sass.default_options[:cache_location] = "#@temp_dir/sass-cache"
-
-    unless File.directory?(@temp_dir)
-        Dir.mkdir @temp_dir
-    end
+    AssetPocket::SourceFilter::Sass.default_options[:cache_location] = @temp_dir.join("sass-cache").to_s
 end
 
 After do
     @created_files.each do |filename|
-        File.unlink filename
-        dirname = File.dirname(filename)
-        if Dir["#{dirname}/*"].empty?
-            Dir.rmdir(dirname)
-        end
+        filename.delete
+        filename.dirname.rmdir_when_empty
     end
 end
 
 Given /^a file named "([^"]*)" with "([^"]*)"$/ do |filename, content|
-    filename = "#@temp_dir/#{filename}"
-    File.exist?(filename).should be_false
+    filename = @temp_dir.join(filename)
+    filename.exist?.should be_false
 
     @created_files.unshift filename
-    FileUtils.mkpath File.dirname(filename)
-    File.open(filename, "w") {|f| f.write content }
+    filename.dirname.mkpath
+    filename.open("w") {|f| f.write content }
 end
 
 When /^generate a pocket with:$/ do |pocket_content|
@@ -37,9 +30,8 @@ When /^generate a pocket with:$/ do |pocket_content|
 end
 
 Then /^a file named "([^"]*)" contains "([^"]*)"$/ do |filename, content|
-    filename = "#@temp_dir/#{filename}"
-    File.exist?(filename).should be_true
-
-    File.read(filename).inspect[1..-2].should eql(content)
+    filename = @temp_dir.join(filename)
+    filename.file?.should be_true
+    filename.read.inspect[1..-2].should eql(content)
 end
 
