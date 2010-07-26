@@ -1,8 +1,9 @@
 
 require 'fileutils'
+require 'nokogiri'
 
 $: << File.expand_path("../../../lib/", __FILE__)
-require 'asset_pocket'
+require 'asset_pocket/generator'
 
 $temp_directory_count = 0
 def make_temp_directory
@@ -19,3 +20,18 @@ class Pathname
         false
     end
 end
+
+Before do
+    @created_files = []
+    @temp_dir = make_temp_directory
+
+    AssetPocket::SourceFilter::Sass.default_options[:cache_location] = @temp_dir.join("sass-cache").to_s
+end
+
+After do
+    @created_files.each do |filename|
+        filename.delete
+        filename.dirname.rmdir_when_empty
+    end
+end
+

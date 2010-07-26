@@ -1,18 +1,4 @@
 
-Before do
-    @created_files = []
-    @temp_dir = make_temp_directory
-
-    AssetPocket::SourceFilter::Sass.default_options[:cache_location] = @temp_dir.join("sass-cache").to_s
-end
-
-After do
-    @created_files.each do |filename|
-        filename.delete
-        filename.dirname.rmdir_when_empty
-    end
-end
-
 Given /^a file named "([^"]*)" with "([^"]*)"$/ do |filename, content|
     filename = @temp_dir.join(filename)
     filename.exist?.should be_false

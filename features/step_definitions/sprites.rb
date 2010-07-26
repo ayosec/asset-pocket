@@ -7,21 +7,8 @@ def random_image(filename, width, height)
     filename.dirname.mkpath
     img.write filename.to_s
 
-    @created_images.unshift filename
+    @created_files.unshift filename if @created_files
 end
-
-Before do
-    @created_images = []
-    @temp_dir = make_temp_directory
-end
-
-After do
-    @created_images.each do |filename|
-        filename.delete
-        filename.dirname.rmdir_when_empty
-    end
-end
-
 
 Given /^(\d+) random images at "([^"]*)" with a random image of (\d+)x(\d+)$/ do |count, pattern, width, height|
     width = width.to_i
@@ -49,6 +36,8 @@ Then /^the sprite "([^"]*)" is generated in "([^"]*)"$/ do |sprite, css_file|
 end
 
 Then /^the sprite "([^"]*)" encoded in (\S+) is generated in "([^"]*)"$/ do |sprite, format, css_file|
+    @sprite_name = sprite
+
     css_file = @temp_dir.join(css_file)
     @css_loaded = just_parse_css(css_file.read)
     @css_loaded.should include_key(/\.sprite-#{sprite}--/)
@@ -69,3 +58,8 @@ end
 Then /^this sprite format is (\S+)$/ do |format|
     @image_sprite.format.downcase.should eql(format.downcase)
 end
+
+Then /^this sprite has the image "([^"]*)"$/ do |image_name|
+    @css_loaded.should include_key(/\.sprite-#{@sprite_name}--#{image_name}\b/)
+end
+
