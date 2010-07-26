@@ -113,6 +113,11 @@ module AssetPocket
                 @current_sprite.images_location = value
             end
 
+            def quality(value)
+                ensure_sprite!
+                @current_sprite.quality = value
+            end
+
             def use(pattern)
                 if @current_sprite
                     @current_sprite.use pattern

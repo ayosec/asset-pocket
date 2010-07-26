@@ -36,6 +36,9 @@ Then /^the sprite "([^"]*)" is generated in "([^"]*)"$/ do |sprite, css_file|
 end
 
 Then /^the sprite "([^"]*)" encoded in (\S+) is generated in "([^"]*)"$/ do |sprite, format, css_file|
+
+    @found_sprites ||= {}
+
     @sprite_name = sprite
 
     css_file = @temp_dir.join(css_file)
@@ -44,6 +47,8 @@ Then /^the sprite "([^"]*)" encoded in (\S+) is generated in "([^"]*)"$/ do |spr
 
     @sprite = @css_loaded.reject {|key, value| key !~ /\.sprite-#{sprite}--/ or value.join !~ /url\([^)]+\.#{format}\)/i }
     @image_sprite = Magick::Image.read(css_file.dirname.join(@sprite.values.to_s.first =~ /url\((.*?\.#{format})\)/i && $1).to_s).first
+
+    @found_sprites[sprite] = @image_sprite
 end
 
 Then /^this sprite has (\d+) images?$/ do |count|
@@ -61,5 +66,11 @@ end
 
 Then /^this sprite has the image "([^"]*)"$/ do |image_name|
     @css_loaded.should include_key(/\.sprite-#{@sprite_name}--#{image_name}\b/)
+end
+
+Then /^the size of the sprite "([^"]*)" is smaller than the size of the sprite "([^"]*)"$/ do |big_sprite, small_sprite|
+    @found_sprites[big_sprite].should_not be_nil
+    @found_sprites[small_sprite].should_not be_nil
+    (@found_sprites[big_sprite].to_blob > @found_sprites[small_sprite].to_blob).should be_true
 end
 

@@ -5,7 +5,7 @@ require 'md5'
 module AssetPocket
     class Pocket
         class SpriteDefition
-            attr_accessor :layout
+            attr_accessor :layout, :quality
             attr_reader :name, :css_block, :images_location
 
             def initialize(name, css_block)
@@ -56,9 +56,10 @@ module AssetPocket
                     end
 
                     images.clear
-                    canvas = canvas.to_blob
-
-                    sprite_name.open("w") {|f| f.write canvas }
+                    quality = quality() # Force variable creation. Block passed to canvas.write losses instance reference (called with instance_eval?)
+                    canvas.write(sprite_name.to_s) do |info|
+                        info.quality = quality if quality
+                    end
                 end
             end
 

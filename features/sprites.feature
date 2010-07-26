@@ -67,3 +67,28 @@ Feature: generate CSS sprites from the pocket
         And the sprite "multiformat" encoded in JPEG is generated in "sprites/css/multiformat.css"
         And this sprite has 10 images
         And this sprite is 10x300
+
+    @sprites
+    Scenario: the sprites can be generated using different quality values
+        Given a file named "images/a.jpeg" with a random image of 10x10
+        And a file named "images/b.jpeg" with a random image of 10x20
+        And a file named "images/c.jpeg" with a random image of 20x20
+        When generate a pocket with:
+        """
+        css "sprites/css/everything.css" do
+            sprite "best" do
+                layout :vertical
+                quality 100
+                use "images/*"
+            end
+
+            sprite "worst" do
+                layout :vertical
+                quality 1
+                use "images/*"
+            end
+        end
+        """
+        Then the sprite "worst" is generated in "sprites/css/everything.css"
+        And the sprite "best" is generated in "sprites/css/everything.css"
+        And the size of the sprite "worst" is smaller than the size of the sprite "best"
