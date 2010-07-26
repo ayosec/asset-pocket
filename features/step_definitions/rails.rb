@@ -4,8 +4,22 @@ Given /^a rails application in a temporary directory$/ do
     case (`rails -v` =~ /rails (\d+)/i && $1).to_i
     when 3
         `rails new #{@temp_dir}`
+        @temp_dir.join("config/initializers/rack_test.rb").open("w") {|f| f.puts <<-EOI }
+            RackTestApplication = proc { Rails::Application.instance }
+        EOI
     when 2
         `rails #{@temp_dir}`
+        @temp_dir.join("config/initializers/rack_test.rb").open("w") {|f| f.puts <<-EOI }
+            gem "rack-test"
+            require 'rack/test'
+            RackTestApplication = proc { ActionController::Dispatcher.new }
+
+            class String
+                def html_safe
+                    self
+                end
+            end
+        EOI
     else
         pending
     end
@@ -46,7 +60,7 @@ Then /^the page at "([^"]*)" include "([^"]*)"$/ do |uri,html|
         runner = "script/runner"
     end
 
-    @page_body = `cd #{@temp_dir}; #{runner} 'puts Rack::Test::Session.new(Rails::Application.instance).get("#{uri}").body'`
+    @page_body = `cd #{@temp_dir}; #{runner} 'puts Rack::Test::Session.new(RackTestApplication.call).get("#{uri}").body'`
     @page_body.should include(html)
 end
 
