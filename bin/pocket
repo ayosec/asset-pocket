@@ -1,0 +1,16 @@
+#!/usr/bin/ruby
+
+PocketPath = ["pocket.rb", "config/pocket.rb"].detect {|path| File.exist?(path) }
+
+if PocketPath.nil?
+  STDERR.puts "No pocket.rb found!"
+  exit 1
+end
+
+require 'asset_pocket/generator'
+generator = AssetPocket::Generator.new
+generator.root_path = Dir.pwd
+generator.parse_string File.read(PocketPath)
+generator.run!
+
+# vim: syntax=ruby
